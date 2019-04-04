@@ -11,34 +11,36 @@ class DataGenerator():
 
         self.set_rng(random_state)
         self.set_gen_noise(type_noise)
-        self.dict_gen = {#syntetic data
-                         'Helix1d':  gen_helix1_data,
-                         'Helix2d':  gen_helix2_data,
-                         'Helicoid': gen_helicoid_data,
-                         'Spiral':   gen_spiral_data,
-                         'Roll':     gen_roll_data,
-                         'Scurve':   gen_scurve_data, 
-                         'Star':     gen_star_data,
-                         'Moebius':  gen_moebius_data,
-            
-                         'Sphere':  gen_sphere_data,
-                         'Norm':    gen_norm_data,
-                         'Uniform': gen_uniform_data,
-                         'Cubic':   gen_cubic_data,
-            
-                         'Affine_3to5':   gen_affine3_5_data,
-                         'Affine':        gen_affine_data,
-            
-                         'Nonlinear_4to6': gen_nonlinear4_6_data,
-                         'Nonlinear':      gen_nonlinear_data,
-                         'Paraboloid':     gen_porabaloid_data,
-                         
-                         #real data
-                         'Digits':  get_digits,
-                         'Isomap':  get_Isomap,
-                         'Hands':   get_Hands,
-                         'ISOLET':  get_ISOLET,
-                         'MNISTd':  get_MNISTd}
+        self.dict_gen = {
+            #syntetic data
+            'Helix1d':        gen_helix1_data,
+            'Helix2d':        gen_helix2_data,
+            'Helicoid':       gen_helicoid_data,
+            'Spiral':         gen_spiral_data,
+            'Roll':           gen_roll_data,
+            'Scurve':         gen_scurve_data,
+            'Star':           gen_star_data,
+            'Moebius':        gen_moebius_data,
+
+            'Sphere':         gen_sphere_data,
+            'Norm':           gen_norm_data,
+            'Uniform':        gen_uniform_data,
+            'Cubic':          gen_cubic_data,
+
+            'Affine_3to5':    gen_affine3_5_data,
+            'Affine':         gen_affine_data,
+
+            'Nonlinear_4to6': gen_nonlinear4_6_data,
+            'Nonlinear':      gen_nonlinear_data,
+            'Paraboloid':     gen_porabaloid_data,
+
+            #real data
+            'Digits':         get_digits,
+            'Isomap':         get_Isomap,
+            'Hands':          get_Hands,
+            'ISOLET':         get_ISOLET,
+            'MNISTd':         get_MNISTd
+        }
 
 
     def set_rng(self, random_state:int=None):
@@ -53,10 +55,7 @@ class DataGenerator():
         if type_noise == 'uniform':
             self.gen_noise = lambda n, dim: np.random.rand(n, dim) - 0.5
 
-    def gen_data(self, name:str, n:int,
-                 dim:int, d:int,
-                 noise:float=0.0):
-
+    def gen_data(self, name:str, n:int, dim:int, d:int, noise:float=0.0):
     # Parameters:
     # --------------------
     # name: string 
@@ -73,11 +72,11 @@ class DataGenerator():
     # Returns:
     # data: pd.Dataframe of shape (n, dim)
     #     The points
-
         assert name in self.dict_gen.keys(),\
                'Name of data is unknown'
 
-        return self.dict_gen[name](n=n, dim=dim, d=d) + self.gen_noise(n, dim) * noise
+        return self.dict_gen[name](n=n, dim=dim, d=d) + \
+               self.gen_noise(n, dim) * noise
 
 #############################################################################
 #                                SYNTETIC DATA                              #
@@ -89,7 +88,8 @@ def gen_spiral_data(n, dim, d):
     assert d == 1
     assert dim >= 3
     t = 10 * np.pi * np.random.rand(n)
-    data = pd.DataFrame(np.vstack([100 * np.cos(t), 100 * np.sin(t), t, np.zeros((dim - 3, n))])).T
+    data = pd.DataFrame(np.vstack([100 * np.cos(t), 100 * np.sin(t),
+                                   t, np.zeros((dim - 3, n))])).T
     assert data.shape == (n, dim)
     return data
 
@@ -146,8 +146,8 @@ def gen_scurve_data(n, dim, d):
 
 def gen_sphere_data(n, dim, d):
     assert d < dim
-    norm_x = np.random.randn(n,d + 1)
-    data = pd.DataFrame(np.hstack([norm_x/np.sqrt(np.sum(norm_x**2, axis=1))[:,None],
+    V = np.random.randn(n,d + 1)
+    data = pd.DataFrame(np.hstack([V/np.sqrt((V**2).sum(axis=1))[:,None],
                                    np.zeros((n, dim - d - 1))]))
     assert data.shape == (n, dim)
     return data
@@ -272,14 +272,16 @@ def gen_porabaloid_data(n, dim, d):
 def gen_star_data(n, dim, d):
     assert dim >= d
     assert d == 1
+    assert dim >= 2
 
     t = np.linspace(-np.pi, np.pi, n)
     t = np.pi - np.random.rand(n) * 2 * np.pi
     omega = 5
-    X = np.concatenate((((1 + 0.3 * np.cos(omega*t)) * np.cos(t)).reshape(-1, 1),
-                        ((1 + 0.3 * np.cos(omega*t)) * np.sin(t)).reshape(-1, 1)), axis=1)
-    
-    data = pd.DataFrame(np.concatenate((X, np.zeros((n, dim-X.shape[1]))), axis=1))
+    X = np.concatenate((((1 + 0.3*np.cos(omega*t))*np.cos(t)).reshape(-1, 1),
+                        ((1 + 0.3*np.cos(omega*t))*np.sin(t)).reshape(-1, 1),
+                        np.zeros((n, dim - 2))), axis=1)
+
+    data = pd.DataFrame(X)
     assert data.shape == (n, dim)
     return data 
 
@@ -302,7 +304,7 @@ def get_digits(n=1797, dim=64, d=10):
     return data
 
 
-def get_Isomap(n=698, dim=4096, d=3, path='intdim/data//'):
+def get_Isomap(n=698, dim=4096, d=3):
     assert (n, dim, d) == (698, 4096, 3)
     
     module_path = dirname(__file__)
@@ -330,12 +332,15 @@ def get_Hands(n=481, dim=245760, d=3):
     return data
 
 def loadMNIST(prefix, folder ):
-    intType = np.dtype( 'int32' ).newbyteorder( '>' )
+    intType = np.dtype('int32' ).newbyteorder( '>' )
     nMetaDataBytes = 4 * intType.itemsize
 
-    data = np.fromfile( folder + "/" + prefix + '-images.idx3-ubyte', dtype = 'ubyte' )
-    magicBytes, nImages, width, height = np.frombuffer( data[:nMetaDataBytes].tobytes(), intType )
-    data = data[nMetaDataBytes:].astype( dtype = 'float32' ).reshape( [ nImages, width, height ] )
+    data = np.fromfile(folder + "/" + prefix + '-images.idx3-ubyte',
+                        dtype = 'ubyte' )
+    magicBytes, nImages,\
+    width, height = np.frombuffer(data[:nMetaDataBytes].tobytes(), intType)
+    data = data[nMetaDataBytes:].astype(dtype = 'float32')
+    data = data.reshape([nImages, width, height])
 
     labels = np.fromfile( folder + '/' + prefix + '-labels.idx1-ubyte',
                           dtype = 'ubyte' )[2 * intType.itemsize:]
@@ -355,7 +360,8 @@ def get_MNISTd(n=70000, dim=784, d = 0):
     path = join(module_path, 'data', 'mnist')
     trainingImages, trainingLabels = loadMNIST('train', path)
     testImages, testLabels = loadMNIST('t10k', path)
-    data = pd.DataFrame(np.vstack([trainingImages, testImages]).reshape(70000, -1))
+    data = np.vstack([trainingImages, testImages]).reshape(70000, -1)
+    data = pd.DataFrame(data)
     label = np.concatenate([trainingLabels, testLabels])
     if d != 10:
         mask = label == d
