@@ -131,7 +131,7 @@ def gen_roll_data(n, dim, d):
     assert d < dim
     assert d == 2
     data = pd.DataFrame(np.hstack([ds.make_swiss_roll(n)[0],
-                                        np.zeros((n, dim - d - 1))]))
+                                   np.zeros((n, dim - d - 1))]))
     assert data.shape == (n, dim)
     return data
 
@@ -139,7 +139,7 @@ def gen_scurve_data(n, dim, d):
     assert d < dim
     assert d == 2
     data = pd.DataFrame(np.hstack([ds.make_s_curve(n)[0],
-                                        np.zeros((n, dim - d - 1))]))
+                                   np.zeros((n, dim - d - 1))]))
     assert data.shape == (n, dim)
     return data
 
@@ -148,7 +148,7 @@ def gen_sphere_data(n, dim, d):
     assert d < dim
     norm_x = np.random.randn(n,d + 1)
     data = pd.DataFrame(np.hstack([norm_x/np.sqrt(np.sum(norm_x**2, axis=1))[:,None],
-                                          np.zeros((n, dim - d - 1))]))
+                                   np.zeros((n, dim - d - 1))]))
     assert data.shape == (n, dim)
     return data
     
@@ -171,15 +171,14 @@ def gen_cubic_data(n, dim, d):
     cubic_data = np.array([[]]*(d + 1))
     for i in range(d + 1):
         n_once = int(n / (2 * (d + 1)) + 1)
-        #one side
+        #1st side
         data_once = np.random.rand(d + 1, n_once)
         data_once[i] = 0
         cubic_data = np.hstack([cubic_data, data_once])
-        #two side
+        #2nd side
         data_once = np.random.rand(d + 1, n_once)
         data_once[i] = 1
         cubic_data = np.hstack([cubic_data, data_once])
-
     cubic_data = cubic_data.T[:n]
     data = pd.DataFrame(np.hstack([cubic_data, np.zeros((n, dim - d - 1))]))
     assert data.shape == (n, dim)   
@@ -291,6 +290,7 @@ from scipy.io import loadmat
 import zipfile
 from PIL import Image
 import io
+from os.path import dirname, join
 
 def get_digits(n=1797, dim=64, d=10):
     assert (n, dim, d) == (1797, 64, 10)
@@ -302,18 +302,22 @@ def get_digits(n=1797, dim=64, d=10):
     return data
 
 
-def get_Isomap(n=698, dim=4096, d=3, path='intdim/data/isomap/face_data.mat'):
+def get_Isomap(n=698, dim=4096, d=3, path='intdim/data//'):
     assert (n, dim, d) == (698, 4096, 3)
     
+    module_path = dirname(__file__)
+    path = join(module_path, 'data', 'isomap', 'face_data.mat')
     mat = loadmat(path)
     data = pd.DataFrame(mat['images']).T
     
     assert data.shape == (n, dim)
     return data
 
-def get_Hands(n=481, dim=245760, d=3, path='intdim/data/hands/hands.zip'):
+def get_Hands(n=481, dim=245760, d=3):
     assert (n, dim, d) == (481, 245760, 3)
     
+    module_path = dirname(__file__)
+    path = join(module_path, 'data', 'hands', 'hands.zip')
     archive = zipfile.ZipFile(path, 'r')
     data = []
     for file in archive.filelist:
@@ -325,7 +329,7 @@ def get_Hands(n=481, dim=245760, d=3, path='intdim/data/hands/hands.zip'):
     assert data.shape == (n, dim)
     return data
 
-def loadMNIST( prefix, folder ):
+def loadMNIST(prefix, folder ):
     intType = np.dtype( 'int32' ).newbyteorder( '>' )
     nMetaDataBytes = 4 * intType.itemsize
 
@@ -333,7 +337,7 @@ def loadMNIST( prefix, folder ):
     magicBytes, nImages, width, height = np.frombuffer( data[:nMetaDataBytes].tobytes(), intType )
     data = data[nMetaDataBytes:].astype( dtype = 'float32' ).reshape( [ nImages, width, height ] )
 
-    labels = np.fromfile( folder + "/" + prefix + '-labels.idx1-ubyte',
+    labels = np.fromfile( folder + '/' + prefix + '-labels.idx1-ubyte',
                           dtype = 'ubyte' )[2 * intType.itemsize:]
     return data, labels
 
@@ -347,8 +351,10 @@ def get_MNISTd(n=70000, dim=784, d = 0):
            (n, d) == (70000, 10)
     assert (d >= 0) and (d <= 10)
     
-    trainingImages, trainingLabels = loadMNIST( "train", "intdim/data/mnist" )
-    testImages, testLabels = loadMNIST( "t10k", "intdim/data/mnist" )
+    module_path = dirname(__file__)
+    path = join(module_path, 'data', 'mnist')
+    trainingImages, trainingLabels = loadMNIST('train', path)
+    testImages, testLabels = loadMNIST('t10k', path)
     data = pd.DataFrame(np.vstack([trainingImages, testImages]).reshape(70000, -1))
     label = np.concatenate([trainingLabels, testLabels])
     if d != 10:
@@ -362,7 +368,9 @@ def get_ISOLET(n=7797, dim=617, d=19):
     assert (n, dim) == (7797, 617)
     assert (d >= 16) and (d <= 22)
     
-    df = pd.read_csv('intdim/data/isolet/isolet_csv.csv')
+    module_path = dirname(__file__)
+    path = join(module_path, 'data', 'isolet', 'isolet_csv')
+    df = pd.read_csv(path)
     data = df[[col for col in df.columns if 'f' in col]]
 
     assert data.shape == (n, dim)
