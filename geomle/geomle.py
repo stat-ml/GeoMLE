@@ -1,4 +1,4 @@
-__all__ = ('geo_mle')
+__all__ = ('geomle')
 
 import pandas as pd
 import numpy as np
@@ -79,7 +79,7 @@ def _func(df, degree, alpha):
     if np.isnan(std).any(): std = np.ones_like(std) 
     return fit_poly_reg(R, d, std**-1, degree=degree, alpha=alpha)
 
-def geo_mle(X, k1=10, k2=40, nb_iter1=10, nb_iter2=20, degree=(1, 2),
+def geomle(X, k1=10, k2=40, nb_iter1=10, nb_iter2=20, degree=(1, 2),
            alpha=5e-3, ver='GeoMLE', random_state=None, debug=False):
     """
     Returns range of Levina-Bickel dimensionality estimation for k = k1..k2 (k1 < k2) averaged over bootstrap samples
