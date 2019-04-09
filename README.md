@@ -6,7 +6,7 @@ Research of intrinsic dimension. We present imporvements of algorithm based on m
 
 ## Experiments
 
-All experiments you can find in [notebook](FinalNtb.ipynb):
+All experiments you can find in [notebook](paper/FinalNtb.ipynb):
 
 - [x] Decribing algorithms
 - [x] Test with nonuniform distibution
