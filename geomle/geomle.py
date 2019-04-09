@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from sklearn.linear_model import LinearRegression, Ridge
-from tqdm import tqdm
 from functools import partial
 
 def tolist(x):
