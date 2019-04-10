@@ -6,7 +6,7 @@
 
 The existing approaches to intrinsic dimension estimation usually are not reliable when the data are nonlinearly embedded in the high dimensional space. In this work, we show that the explicit accounting to geometric properties of unknown support leads to the polynomial correction to the standard maximum likelihood estimate of intrinsic dimension for flat manifolds. The proposed algorithm (GeoMLE) realizes the correction by regression of standard MLEs based on distances to nearest neighbors for different sizes of neighborhoods. Moreover, the proposed approach also efficiently handles the case of nonuniform sampling of the manifold. We perform numerous experiments on different synthetic and real-world datasets. The results show that our algorithm achieves state-of-the-art performance, while also being computationally efficient and robust to noise in the data.
 
-## Quick Start with libriry GeoMLE
+## Quick Start with library GeoMLE
 
 ### Data generation
 ```python
