@@ -34,12 +34,12 @@ class DataGenerator():
             'Nonlinear':      gen_nonlinear_data,
             'Paraboloid':     gen_porabaloid_data,
 
-            #real data
-            'Digits':         get_digits,
-            'Isomap':         get_Isomap,
-            'Hands':          get_Hands,
-            'ISOLET':         get_ISOLET,
-            'MNISTd':         get_MNISTd
+            # #real data
+            # 'Digits':         get_digits,
+            # 'Isomap':         get_Isomap,
+            # 'Hands':          get_Hands,
+            # 'ISOLET':         get_ISOLET,
+            # 'MNISTd':         get_MNISTd
         }
 
 
@@ -288,96 +288,96 @@ def gen_star_data(n, dim, d):
 #############################################################################
 #                                  REAL DATA                                #
 #############################################################################
-from scipy.io import loadmat
-import zipfile
-from PIL import Image
-import io
-from os.path import dirname, join
+# from scipy.io import loadmat
+# import zipfile
+# from PIL import Image
+# import io
+# from os.path import dirname, join
 
-def get_digits(n=1797, dim=64, d=10):
-    assert (n, dim, d) == (1797, 64, 10)
+# def get_digits(n=1797, dim=64, d=10):
+#     assert (n, dim, d) == (1797, 64, 10)
     
-    data = ds.load_digits()
-    data = pd.DataFrame(data['data'])
+#     data = ds.load_digits()
+#     data = pd.DataFrame(data['data'])
     
-    assert data.shape == (n, dim)
-    return data
+#     assert data.shape == (n, dim)
+#     return data
 
 
-def get_Isomap(n=698, dim=4096, d=3):
-    assert (n, dim, d) == (698, 4096, 3)
+# def get_Isomap(n=698, dim=4096, d=3):
+#     assert (n, dim, d) == (698, 4096, 3)
     
-    module_path = dirname(__file__)
-    path = join(module_path, 'data', 'isomap', 'face_data.mat')
-    mat = loadmat(path)
-    data = pd.DataFrame(mat['images']).T
+#     module_path = dirname(__file__)
+#     path = join(module_path, 'data', 'isomap', 'face_data.mat')
+#     mat = loadmat(path)
+#     data = pd.DataFrame(mat['images']).T
     
-    assert data.shape == (n, dim)
-    return data
+#     assert data.shape == (n, dim)
+#     return data
 
-def get_Hands(n=481, dim=245760, d=3):
-    assert (n, dim, d) == (481, 245760, 3)
+# def get_Hands(n=481, dim=245760, d=3):
+#     assert (n, dim, d) == (481, 245760, 3)
     
-    module_path = dirname(__file__)
-    path = join(module_path, 'data', 'hands', 'hands.zip')
-    archive = zipfile.ZipFile(path, 'r')
-    data = []
-    for file in archive.filelist:
-        data_tmp = archive.read(file)
-        img = Image.open(io.BytesIO(data_tmp))
-        data.append(np.array(img).reshape(-1))
-    data = pd.DataFrame(np.array(data))
+#     module_path = dirname(__file__)
+#     path = join(module_path, 'data', 'hands', 'hands.zip')
+#     archive = zipfile.ZipFile(path, 'r')
+#     data = []
+#     for file in archive.filelist:
+#         data_tmp = archive.read(file)
+#         img = Image.open(io.BytesIO(data_tmp))
+#         data.append(np.array(img).reshape(-1))
+#     data = pd.DataFrame(np.array(data))
     
-    assert data.shape == (n, dim)
-    return data
+#     assert data.shape == (n, dim)
+#     return data
 
-def loadMNIST(prefix, folder ):
-    intType = np.dtype('int32' ).newbyteorder( '>' )
-    nMetaDataBytes = 4 * intType.itemsize
+# def loadMNIST(prefix, folder ):
+#     intType = np.dtype('int32' ).newbyteorder( '>' )
+#     nMetaDataBytes = 4 * intType.itemsize
 
-    data = np.fromfile(folder + "/" + prefix + '-images.idx3-ubyte',
-                        dtype = 'ubyte' )
-    magicBytes, nImages,\
-    width, height = np.frombuffer(data[:nMetaDataBytes].tobytes(), intType)
-    data = data[nMetaDataBytes:].astype(dtype = 'float32')
-    data = data.reshape([nImages, width, height])
+#     data = np.fromfile(folder + "/" + prefix + '-images.idx3-ubyte',
+#                         dtype = 'ubyte' )
+#     magicBytes, nImages,\
+#     width, height = np.frombuffer(data[:nMetaDataBytes].tobytes(), intType)
+#     data = data[nMetaDataBytes:].astype(dtype = 'float32')
+#     data = data.reshape([nImages, width, height])
 
-    labels = np.fromfile( folder + '/' + prefix + '-labels.idx1-ubyte',
-                          dtype = 'ubyte' )[2 * intType.itemsize:]
-    return data, labels
+#     labels = np.fromfile( folder + '/' + prefix + '-labels.idx1-ubyte',
+#                           dtype = 'ubyte' )[2 * intType.itemsize:]
+#     return data, labels
 
-def get_MNISTd(n=70000, dim=784, d = 0):
-    assert dim == 784
-    assert (n, d) == (6903, 0) or (n, d) == (7877, 1) or \
-           (n, d) == (6990, 2) or (n, d) == (7141, 3) or \
-           (n, d) == (6824, 4) or (n, d) == (6313, 5) or \
-           (n, d) == (6876, 6) or (n, d) == (7293, 7) or \
-           (n, d) == (6825, 8) or (n, d) == (6958, 9) or \
-           (n, d) == (70000, 10)
-    assert (d >= 0) and (d <= 10)
+# def get_MNISTd(n=70000, dim=784, d = 0):
+#     assert dim == 784
+#     assert (n, d) == (6903, 0) or (n, d) == (7877, 1) or \
+#            (n, d) == (6990, 2) or (n, d) == (7141, 3) or \
+#            (n, d) == (6824, 4) or (n, d) == (6313, 5) or \
+#            (n, d) == (6876, 6) or (n, d) == (7293, 7) or \
+#            (n, d) == (6825, 8) or (n, d) == (6958, 9) or \
+#            (n, d) == (70000, 10)
+#     assert (d >= 0) and (d <= 10)
     
-    module_path = dirname(__file__)
-    path = join(module_path, 'data', 'mnist')
-    trainingImages, trainingLabels = loadMNIST('train', path)
-    testImages, testLabels = loadMNIST('t10k', path)
-    data = np.vstack([trainingImages, testImages]).reshape(70000, -1)
-    data = pd.DataFrame(data)
-    label = np.concatenate([trainingLabels, testLabels])
-    if d != 10:
-        mask = label == d
-        data = data.loc[mask]
+#     module_path = dirname(__file__)
+#     path = join(module_path, 'data', 'mnist')
+#     trainingImages, trainingLabels = loadMNIST('train', path)
+#     testImages, testLabels = loadMNIST('t10k', path)
+#     data = np.vstack([trainingImages, testImages]).reshape(70000, -1)
+#     data = pd.DataFrame(data)
+#     label = np.concatenate([trainingLabels, testLabels])
+#     if d != 10:
+#         mask = label == d
+#         data = data.loc[mask]
     
-    assert data.shape[1] == dim
-    return data
+#     assert data.shape[1] == dim
+#     return data
 
-def get_ISOLET(n=7797, dim=617, d=19):
-    assert (n, dim) == (7797, 617)
-    assert (d >= 16) and (d <= 22)
+# def get_ISOLET(n=7797, dim=617, d=19):
+#     assert (n, dim) == (7797, 617)
+#     assert (d >= 16) and (d <= 22)
     
-    module_path = dirname(__file__)
-    path = join(module_path, 'data', 'isolet', 'isolet_csv')
-    df = pd.read_csv(path)
-    data = df[[col for col in df.columns if 'f' in col]]
+#     module_path = dirname(__file__)
+#     path = join(module_path, 'data', 'isolet', 'isolet_csv')
+#     df = pd.read_csv(path)
+#     data = df[[col for col in df.columns if 'f' in col]]
 
-    assert data.shape == (n, dim)
-    return data
+#     assert data.shape == (n, dim)
+#     return data
