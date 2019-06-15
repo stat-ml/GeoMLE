@@ -49,7 +49,7 @@ In this paper we compare our approch with many famous algorithms:
 * DANCo
 * Local PCA
 
-We use this [implementation](https://cran.r-project.org/web/packages/intrinsicDimension/index.html) on R.
+We use this [implementation](https://cran.r-project.org/web/packages/intrinsicDimension/index.html) in R.
 
 ## BibTex
 
