@@ -156,17 +156,17 @@ def gen_roll_data(n, dim, d, sampler):
     assert data.shape == (n, dim)
     return data
 
-def gen_scurve_data(n, dim, d, type_sample):
+def gen_scurve_data(n, dim, d, sampler):
     assert d < dim
     assert dim >= 3
     assert d == 2
     t = 3 * np.pi * (sampler(n) - 0.5)
     p = 2.0 * sampler(n)
     
-    data = pd.DataFrame(np.hstack([np.sin(t),
+    data = pd.DataFrame(np.vstack([np.sin(t),
                                    p,
                                    np.sign(t) * (np.cos(t) - 1),
-                                   np.zeros((n, dim - d - 1))]))
+                                   np.zeros((dim - d - 1, n))])).T
     assert data.shape == (n, dim)
     return data
 
@@ -286,7 +286,7 @@ def gen_nonlinear_data(n, dim, d, sampler):
     assert data.shape == (n, dim)
     return data
     
-def gen_porabaloid_data(n, dim, d, type_sample):
+def gen_porabaloid_data(n, dim, d, sampler):
     assert dim == 3 * (d + 1)
 
     E = np.random.exponential(1, (d+1, n))
