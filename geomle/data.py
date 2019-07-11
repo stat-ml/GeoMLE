@@ -2,12 +2,13 @@ __all__ = ('DataGenerator')
 
 import pandas as pd
 import numpy as np
+from .utils import bound_nonuniform_sampler, uniform_sampler
 
 class DataGenerator():
 
     def __init__(self,
-                 random_state: int=None,
-                 type_noise:   str='norm'):
+                 random_state: int = None,
+                 type_noise:   str = 'norm'):
 
         self.set_rng(random_state)
         self.set_gen_noise(type_noise)
@@ -55,7 +56,7 @@ class DataGenerator():
         if type_noise == 'uniform':
             self.gen_noise = lambda n, dim: np.random.rand(n, dim) - 0.5
 
-    def gen_data(self, name:str, n:int, dim:int, d:int, noise:float=0.0):
+    def gen_data(self, name:str, n:int, dim:int, d:int, type_sample:str='uniform', noise:float=0.0):
     # Parameters:
     # --------------------
     # name: string 
@@ -74,109 +75,136 @@ class DataGenerator():
     #     The points
         assert name in self.dict_gen.keys(),\
                'Name of data is unknown'
-
-        return self.dict_gen[name](n=n, dim=dim, d=d) + \
-               self.gen_noise(n, dim) * noise
+        if (type_sample == 'uniform'):
+            if name == 'Sphere':
+                sampler = np.random.randn
+            else:
+                sampler = np.random.rand
+        else:
+            if name == 'Sphere':
+                sampler = uniform_sampler
+            else:
+                sampler = bound_nonuniform_sampler
+        
+        data = self.dict_gen[name](n=n, dim=dim, d=d, sampler=sampler)
+        noise = self.gen_noise(n, dim) * noise
+        
+        return  data + noise
+               
 
 #############################################################################
 #                                SYNTETIC DATA                              #
 #############################################################################
 from sklearn import datasets as ds
 
-def gen_spiral_data(n, dim, d):
+def gen_spiral_data(n, dim, d, sampler):
     assert d < dim
     assert d == 1
     assert dim >= 3
-    t = 10 * np.pi * np.random.rand(n)
+    t = 10 * np.pi * sampler(n)
     data = pd.DataFrame(np.vstack([100 * np.cos(t), 100 * np.sin(t),
                                    t, np.zeros((dim - 3, n))])).T
     assert data.shape == (n, dim)
     return data
 
-def gen_helix1_data(n, dim, d):
+def gen_helix1_data(n, dim, d, sampler):
     assert d < dim
     assert d == 1
     assert dim >= 3
-    t = 2 * np.pi / n + np.random.rand(n) * 2 * np.pi
+    t = 2 * np.pi / n + sampler(n) * 2 * np.pi
     data = pd.DataFrame(np.vstack([(2 + np.cos(8*t))*np.cos(t),
                                    (2 + np.cos(8*t))*np.sin(t),
                                    np.sin(8*t), np.zeros((dim - 3, n))])).T
     assert data.shape == (n, dim)
     return data
 
-def gen_helix2_data(n, dim, d):
+def gen_helix2_data(n, dim, d, sampler):
     assert d < dim
     assert d == 2
     assert dim >= 3
-    r = 10 * np.pi * np.random.rand(n)
-    p = 10 * np.pi * np.random.rand(n)
+    r = 10 * np.pi * sampler(n)
+    p = 10 * np.pi * sampler(n)
     data = pd.DataFrame(np.vstack([r*np.cos(p), r*np.sin(p),
                                    0.5*p, np.zeros((dim - 3, n))])).T
     assert data.shape == (n, dim)
     return data
 
-def gen_helicoid_data(n, dim, d):
+def gen_helicoid_data(n, dim, d, sampler):
     assert d <= dim
     assert d == 2
     assert dim >= 3
-    u = 2 * np.pi / n + np.random.rand(n) * 2 * np.pi
-    v = 5 * np.pi * np.random.rand(n)
+    u = 2 * np.pi / n + sampler(n) * 2 * np.pi
+    v = 5 * np.pi * sampler(n)
     data = pd.DataFrame(np.vstack([np.cos(v),
                                    np.sin(v) * np.cos(v),
-                                   u, np.zeros((dim - 3, n))])).T
+                                   u,
+                                   np.zeros((dim - 3, n))])).T
     assert data.shape == (n, dim)
     return data
     
-def gen_roll_data(n, dim, d):
+def gen_roll_data(n, dim, d, sampler):
     assert d < dim
+    assert dim >= 3
     assert d == 2
-    data = pd.DataFrame(np.hstack([ds.make_swiss_roll(n)[0],
+    t = 1.5 * np.pi * (1 + 2 * sampler(n))
+    p = 21 * sampler(n)
+    
+    data = pd.DataFrame(np.vstack([t * np.cos(t),
+                                   p,
+                                   t * np.sin(t),
+                                   np.zeros((dim - d - 1, n))])).T
+    assert data.shape == (n, dim)
+    return data
+
+def gen_scurve_data(n, dim, d, type_sample):
+    assert d < dim
+    assert dim >= 3
+    assert d == 2
+    t = 3 * np.pi * (sampler(n) - 0.5)
+    p = 2.0 * sampler(n)
+    
+    data = pd.DataFrame(np.hstack([np.sin(t),
+                                   p,
+                                   np.sign(t) * (np.cos(t) - 1),
                                    np.zeros((n, dim - d - 1))]))
     assert data.shape == (n, dim)
     return data
 
-def gen_scurve_data(n, dim, d):
-    assert d < dim
-    assert d == 2
-    data = pd.DataFrame(np.hstack([ds.make_s_curve(n)[0],
-                                   np.zeros((n, dim - d - 1))]))
-    assert data.shape == (n, dim)
-    return data
 
-
-def gen_sphere_data(n, dim, d):
+def gen_sphere_data(n, dim, d, sampler):
     assert d < dim
-    V = np.random.randn(n,d + 1)
+#     V = np.random.randn(n, d + 1)
+    V = sampler(n, d+1)
     data = pd.DataFrame(np.hstack([V/np.sqrt((V**2).sum(axis=1))[:,None],
                                    np.zeros((n, dim - d - 1))]))
     assert data.shape == (n, dim)
     return data
     
-def gen_norm_data(n, dim, d):
+def gen_norm_data(n, dim, d, sampler):
     assert d <= dim
     norm_xyz = np.random.multivariate_normal(np.zeros(d), np.identity(d), n)
     data = pd.DataFrame(np.hstack([norm_xyz, np.zeros((n, dim - d))]))
     assert data.shape == (n, dim)
     return data
     
-def gen_uniform_data(n, dim, d):
+def gen_uniform_data(n, dim, d, sampler):
     assert d <= dim
     uniform_xyz = np.random.uniform(size=(n, d))
     data = pd.DataFrame(np.hstack([uniform_xyz, np.zeros((n, dim - d))]))
     assert data.shape == (n, dim)
     return data
 
-def gen_cubic_data(n, dim, d):
+def gen_cubic_data(n, dim, d, sampler):
     assert d < dim
     cubic_data = np.array([[]]*(d + 1))
     for i in range(d + 1):
         n_once = int(n / (2 * (d + 1)) + 1)
         #1st side
-        data_once = np.random.rand(d + 1, n_once)
+        data_once = sampler(d + 1, n_once)
         data_once[i] = 0
         cubic_data = np.hstack([cubic_data, data_once])
         #2nd side
-        data_once = np.random.rand(d + 1, n_once)
+        data_once = sampler(d + 1, n_once)
         data_once[i] = 1
         cubic_data = np.hstack([cubic_data, data_once])
     cubic_data = cubic_data.T[:n]
@@ -184,12 +212,12 @@ def gen_cubic_data(n, dim, d):
     assert data.shape == (n, dim)   
     return data
     
-def gen_moebius_data(n, dim, d):
+def gen_moebius_data(n, dim, d, sampler):
     assert dim == 3
     assert d == 2
     
-    phi = np.random.rand(n) * 2 * np.pi
-    rad = np.random.rand(n) * 2 - 1
+    phi = sampler(n) * 2 * np.pi
+    rad = sampler(n) * 2 - 1
     data = pd.DataFrame(np.vstack([(1+0.5*rad*np.cos(5.0*phi))*np.cos(phi),
                                    (1+0.5*rad*np.cos(5.0*phi))*np.sin(phi),
                                    0.5*rad*np.sin(5.0*phi)])).T
@@ -197,10 +225,10 @@ def gen_moebius_data(n, dim, d):
     assert data.shape == (n, dim)
     return data
 
-def gen_affine_data(n, dim, d):
+def gen_affine_data(n, dim, d, sampler):
     assert dim >= d
 
-    p = np.random.rand(d, n) * 5 - 2.5
+    p = sampler(d, n) * 5 - 2.5
     v = np.eye(dim, d)
 #     v = np.random.randint(0, 10, (dim, d))
     data = pd.DataFrame(v.dot(p).T)
@@ -208,11 +236,11 @@ def gen_affine_data(n, dim, d):
     assert data.shape == (n, dim)
     return data    
 
-def gen_affine3_5_data(n, dim, d):
+def gen_affine3_5_data(n, dim, d, sampler):
     assert dim == 5
     assert d == 3
 
-    p = 4 * np.random.rand(d, n)
+    p = 4 * sampler(d, n)
     A = np.array([[ 1.2, -0.5, 0],
                   [ 0.5,  0.9, 0],
                   [-0.5, -0.2, 1],
@@ -225,11 +253,11 @@ def gen_affine3_5_data(n, dim, d):
     assert data.shape == (n, dim)
     return data
 
-def gen_nonlinear4_6_data(n, dim, d):
+def gen_nonlinear4_6_data(n, dim, d, sampler):
     assert dim == 6
     assert d == 4
 
-    p0, p1, p2, p3 = np.random.rand(d, n)
+    p0, p1, p2, p3 = sampler(d, n)
     data = pd.DataFrame(np.vstack([p1**2 * np.cos(2*np.pi*p0),
                                    p2**2 * np.sin(2*np.pi*p0),
                                    p1 + p2 + (p1-p3)**2,
@@ -240,12 +268,12 @@ def gen_nonlinear4_6_data(n, dim, d):
     assert data.shape == (n, dim)
     return data
 
-def gen_nonlinear_data(n, dim, d):
+def gen_nonlinear_data(n, dim, d, sampler):
     assert dim >= d
     m = int(dim / (2 * d))
     assert dim == 2 * m * d
 
-    p = np.random.rand(d, n)
+    p = sampler(d, n)
     F = np.zeros((2*d, n))
     F[0::2, :] = np.cos(2*np.pi*p)
     F[1::2, :] = np.sin(2*np.pi*p)
@@ -258,7 +286,7 @@ def gen_nonlinear_data(n, dim, d):
     assert data.shape == (n, dim)
     return data
     
-def gen_porabaloid_data(n, dim, d):
+def gen_porabaloid_data(n, dim, d, type_sample):
     assert dim == 3 * (d + 1)
 
     E = np.random.exponential(1, (d+1, n))
@@ -269,13 +297,12 @@ def gen_porabaloid_data(n, dim, d):
     assert data.shape == (n, dim)
     return data
 
-def gen_star_data(n, dim, d):
+def gen_star_data(n, dim, d, sampler):
     assert dim >= d
     assert d == 1
     assert dim >= 2
 
-    t = np.linspace(-np.pi, np.pi, n)
-    t = np.pi - np.random.rand(n) * 2 * np.pi
+    t = np.pi - sampler(n) * 2 * np.pi
     omega = 5
     X = np.concatenate((((1 + 0.3*np.cos(omega*t))*np.cos(t)).reshape(-1, 1),
                         ((1 + 0.3*np.cos(omega*t))*np.sin(t)).reshape(-1, 1),
