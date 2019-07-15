@@ -1,7 +1,7 @@
 import numpy as np
 
 def bound_nonuniform_sampler(*args):
-    x = np.random.randn(*args)*0.2 + 0.5
+    x = np.random.randn(*args)*0.1 + 0.5
     x[x < 0] = -x[x < 0]
     x[x > 1] = x[x > 1] - 1
     x[x < 0] = -x[x < 0]

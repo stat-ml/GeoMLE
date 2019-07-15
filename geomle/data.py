@@ -80,11 +80,13 @@ class DataGenerator():
                 sampler = np.random.randn
             else:
                 sampler = np.random.rand
-        else:
+        elif (type_sample == 'nonuniform'):
             if name == 'Sphere':
                 sampler = uniform_sampler
             else:
                 sampler = bound_nonuniform_sampler
+        else:
+            assert False, 'Check type_sample'
         
         data = self.dict_gen[name](n=n, dim=dim, d=d, sampler=sampler)
         noise = self.gen_noise(n, dim) * noise
