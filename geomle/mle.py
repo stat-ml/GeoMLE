@@ -45,7 +45,7 @@ def intrinsic_dim_scale_interval(X, k1=10, k2=20, dist = None):
     """
     intdim_k = []
     if dist is None:
-        neighb = NearestNeighbors(n_neighbors=k+1, n_jobs=1, algorithm='ball_tree').fit(X)
+        neighb = NearestNeighbors(n_neighbors=k2+1, n_jobs=1, algorithm='ball_tree').fit(X)
         dist, ind = neighb.kneighbors(X)
         
     for k in range(k1, k2 + 1):
