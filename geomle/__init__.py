@@ -4,5 +4,5 @@ from .geomle import geomle
 
 
 __all__ = ('DataGenerator',
-           'geomle'
+           'geomle',
            'mle')
